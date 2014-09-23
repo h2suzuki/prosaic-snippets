@@ -1,0 +1,21 @@
+#!/bin/awk -f
+BEGIN {
+	cur_pid = PROCINFO["ppid"]	# Find the caller process pid.
+
+	n = 0
+	do {
+		statfile = sprintf("/proc/%d/stat",cur_pid)
+		getline < statfile	# Now, $1 is pid, and $4 is ppid.
+		err = close(statfile)	# gawk extension
+		if (err)
+			break
+
+		name = gensub("[()]","","g",$2)
+		stack[n++] = sprintf("%s(%d)",name,cur_pid);
+		cur_pid = $4
+
+	} while(name!="init" && n<10)
+
+	for (i = n-1; i>0; i--) printf "%s > ",stack[i]
+	printf "%s\n",stack[0]
+}
