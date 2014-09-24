@@ -1,0 +1,60 @@
+--- # Tweak OS settings by root
+- hosts: lxrservers
+
+  vars:
+    lxr_user: 'lxruser'
+
+    http_port: 80
+    public_key: "{{ lookup('file', '.ssh/id_rsa.pub') }}"
+
+  remote_user: root
+
+  gather_facts: false
+
+  tasks:
+
+    - name: ensure the system has libselinux-python
+      yum: name=libselinux-python state=present
+      # when: ansible_os_family == "RedHat"
+
+    - name: disable selinux in the config file
+      selinux: state=disabled
+
+    - name: check if a reboot is required
+      command: getenforce
+      register: selinux_state
+      changed_when: no
+
+    - name: bailout for a reboot
+      fail: msg="Reboot the system and rerun the playbook after that."
+      when: selinux_state.stdout != "Disabled"
+
+    - name: check if firewall is running
+      command: service iptables status
+      register: firewall
+      ignore_errors: yes
+      changed_when: no
+
+    - name: open httpd port when firewall is running
+      lineinfile:
+        dest="/etc/sysconfig/iptables"
+        regexp="^-A INPUT.*--dport {{ http_port }}"
+        line="-A INPUT -m tcp -p tcp --dport {{ http_port }} -j ACCEPT"
+        insertbefore="^-A INPUT.*REJECT"
+        state=present
+      notify: reload iptables
+      when: firewall.stdout | search("INPUT")
+
+    - name: setup the user for lxr
+      user: name="{{ lxr_user }}" state=present
+
+    - name: register ssh public key to lxr_user
+      authorized_key:
+        user="{{ lxr_user }}"
+        key="{{ public_key }}"
+
+  handlers:
+
+    - name: reload iptables
+      service: name=iptables state=reloaded
+

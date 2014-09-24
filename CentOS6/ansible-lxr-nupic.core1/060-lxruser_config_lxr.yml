@@ -1,0 +1,53 @@
+--- # Configure lxr by lxr_user
+- hosts: lxrservers
+
+  vars:
+    lxr_user: 'lxruser'
+
+    lxr_gen_template: '~/gen-configure-lxr.j2'
+    lxr_gen_script: '/home/lxruser/gen-configure-lxr.py'
+
+    # For gen-configure-lxr.j2 template
+    lxr_host_url: 'http://192.168.170.64'
+    lxr_glimpse_bin: '/home/lxruser/local/bin/glimpse'
+    lxr_glimpseindex_bin: '/home/lxruser/local/bin/glimpseindex'
+    lxr_glimpse_db_dir: '/home/lxruser/local/share/glimpse'
+    lxr_apache_ver: '2.2'
+    lxr_tree_name: 'nupic.core'
+    lxr_caption: 'Nupic.core by Lxr'
+    lxr_source_dir: '/home/lxruser/local/share/lxr/nupic.core'
+    lxr_version_label: 'TAG'
+    lxr_version_name: '2014-09-24'
+    lxr_db_name: '/home/lxruser/local/share/lxr/lxr.db'
+    lxr_config_script: '/home/lxruser/lxr/scripts/configure-lxr.pl'
+    lxr_dir: '/home/lxruser/lxr'
+
+    lxr_custom_dir: '/home/lxruser/lxr/custom.d'
+    lxr_config: '/home/lxruser/lxr/lxr.conf'
+
+  remote_user: "{{ lxr_user }}"
+  gather_facts: false
+
+  tasks:
+
+    - name: generate the pexpect script to run configure-lxr.pl
+      template: src={{ lxr_gen_template }} dest={{ lxr_gen_script }} mode=0755
+
+    - name: execute the generated script
+      command: chdir={{ lxr_dir }} "{{ lxr_gen_script }}"
+      # --> "lxr.conf" and "initdb.sh" will be generated.
+
+    - name: initialize Lxr DB
+      shell: creates={{ lxr_db_name }} chdir={{ lxr_custom_dir }} ./initdb.sh
+      # --> As lxr_initdb is only a script snippet, shell module is necessary.
+
+    - name: copy the config file to the right place
+      command: creates={{ lxr_config }} chdir={{ lxr_custom_dir }}
+        cp ./lxr.conf {{ lxr_config }}
+
+    - name: check if the environment is setup correctly
+      command: chdir={{ lxr_dir }}
+        ./genxref --url={{ lxr_host_url ~"/lxr/"~ lxr_tree_name }} --checkonly
+      register: genxref_output
+      changed_when: false
+

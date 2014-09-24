@@ -1,0 +1,43 @@
+--- # Setup apache for lxr by root
+- hosts: lxrservers
+
+  vars:
+    lxr_user: 'lxruser'
+
+    lxr_dir: '/home/lxruser/lxr'
+    lxr_glimpse_db_dir: '/home/lxruser/local/share/glimpse'
+
+    httpd_lxr_conf: '/etc/httpd/conf.d/apache-lxrserver.conf'
+    httpd_main_conf: '/etc/httpd/conf/httpd.conf'
+    httpd_server_name: '192.168.170.64'
+
+  remote_user: root
+  gather_facts: false
+
+  tasks:
+
+    - name: copy the httpd config file to the right place
+      command: creates={{ httpd_lxr_conf }}
+        cp {{ lxr_dir ~"/custom.d/apache-lxrserver.conf" }} {{ httpd_lxr_conf }}
+      notify: reload httpd
+
+    - name: set ServerName to httpd
+      lineinfile:
+        dest={{ httpd_main_conf }}
+        regexp="^ServerName"
+        line="ServerName {{ httpd_server_name }}"
+        insertafter="^#ServerName "
+        state=present
+      notify: reload httpd
+
+    - name: make lxr_user home to be world searchable
+      file: path=~{{ lxr_user }} mode=0711
+
+    - name: make glimpse db directory to be world searchable
+      file: path={{ lxr_glimpse_db_dir }} state=directory recurse=yes mode=0755
+
+  handlers:
+
+    - name: reload httpd
+      service: name=httpd state=reloaded
+

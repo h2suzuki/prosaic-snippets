@@ -1,0 +1,53 @@
+#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+
+import pexpect
+#import sys
+
+configure_lxr_responses = {
+    r'single/multiple trees.*>.* ':'m\n',
+    r'Tree designation.*>.* ':'embedded\n',
+    r'--- Host name or IP.*>.* ':'{{ lxr_host_url }}\n',
+    r'Database engine.*>.* ':'sqlite\n',
+
+    # To manually find glimpse that is installed outside of $PATH
+    r'--- Location.*glimpse\).*>.* ':'{{ lxr_glimpse_bin }}\n',
+    r'--- Location.*index\).*>.* ':'{{ lxr_glimpseindex_bin }}\n',
+
+    r'--- Directory for glimpse.*>.* ':'{{ lxr_glimpse_db_dir }}\n',
+{% if lxr_apache_ver | version_compare('2.4','<') %}
+    r'Is your Apache version 2.4.*>.* ':'no\n',
+{% else %}
+    r'Is your Apache version 2.4.*>.* ':'yes\n',
+{% endif %}
+    r'--- Tree designation for URL.*>.* ':'{{ lxr_tree_name }}\n',
+    r'--- Caption in page header.*>.* ':'{{ lxr_caption }}\n',
+    r'--- Source directory.*>.* ':'{{ lxr_source_dir }}\n',
+    r'Label for version selection menu.*>.* ':'{{ lxr_version_label }}\n',
+    r'--- Version name\?  .*>.* ':'{{ lxr_version_name }}\n',
+    r'--- Version name\? \(hit return to stop.*>.* ':'\n',
+    r'--- Database file.*>.* ':'{{ lxr_db_name }}\n',
+    r'Configure another tree.*>.* ':'no\n',
+    r'>.* ':'\n'
+}
+
+def main():
+    output,ret = pexpect.run("{{ lxr_config_script }}",
+                     events=configure_lxr_responses,
+                     withexitstatus=True,
+                     cwd='{{ lxr_dir }}',
+#                     logfile=sys.stdout  # for debugging
+                     )
+
+    if ret:
+        print "pexpect.run() failed with ret=%d",ret
+    else:
+        print "pexpect.run() succeeded"
+
+    print "-------- output --------"
+    print output
+    print "-------- output --------"
+
+
+if __name__ == "__main__":
+    main()

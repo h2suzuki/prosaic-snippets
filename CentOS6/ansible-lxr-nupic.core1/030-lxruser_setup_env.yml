@@ -1,0 +1,27 @@
+--- # Setup the environment by lxruser
+- hosts: lxrservers
+
+  vars:
+    lxr_user: 'lxruser'
+
+  remote_user: "{{ lxr_user }}"
+
+  gather_facts: false
+
+  tasks:
+
+    - name: create ~/local/bin for glimpse
+      file: path=~/local/bin state=directory mode=0755
+
+    - name: create ~/local/share/glimpse for the glimpse index
+      file: path=~/local/share/glimpse state=directory mode=0755
+
+    - name: create ~/local/share/lxr for Lxr DB and the tree store
+      file: path=~/local/share/lxr state=directory mode=0755
+
+    - name: setup $PATH for login usage
+      lineinfile:
+        "dest=~/.bash_profile
+        regexp='^PATH=' line='PATH=$PATH:$HOME/local/bin # Added by ansible'
+        state=present"
+

@@ -1,0 +1,26 @@
+--- # Retrieve the source code to index by lxr_user
+- hosts: lxrservers
+
+  vars:
+    lxr_user: 'lxruser'
+
+    lxr_host_url: 'http://192.168.170.64'
+    lxr_tree_name: 'nupic.core'
+    lxr_version_name: '2014-09-24'
+
+    lxr_dir: '/home/lxruser/lxr'
+    lxr_progress: '~/progress.log'
+
+  remote_user: "{{ lxr_user }}"
+  gather_facts: false
+
+  tasks:
+
+    - name: notice
+      debug: msg="Indexing can take very long time. tail -f {{ lxr_progress }} for the current status"
+
+    - name: index the source directory
+      shell: chdir={{ lxr_dir }}
+        ./genxref --url={{ lxr_host_url ~"/lxr/"~ lxr_tree_name }}
+        --version={{ lxr_version_name }} > {{ lxr_progress }} 2>&1
+

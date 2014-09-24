@@ -1,0 +1,57 @@
+--- # Install glimpse by lxr_user
+- hosts: lxrservers
+
+  # Glimpse requires a proper license to use. See Also:
+  #   http://webglimpse.net/sublicensing/licensing.html
+  #   http://webglimpse.net/download.php
+ 
+  vars:
+    lxr_user: 'lxruser'
+
+    download_url: "http://webglimpse.net/trial/glimpse-latest.tar.gz"
+    chksum: "0c21d27d6a3fe37dacdc66ef9194623f5a94b2f5d221dff8f187f69f629beade"
+    tarball: ~/glimpse-latest.tar.gz
+    build_dir: ~/glimpse
+    install_dir: ~/local
+
+  remote_user: "{{ lxr_user }}"
+  gather_facts: false
+
+  tasks:
+
+    - name: download the tarball
+      get_url: url={{ download_url }} sha256sum={{ chksum }} dest={{ tarball }}
+
+    - name: cleanup the build directory
+      file: path={{ build_dir }} state=absent
+
+    - name: prepare the build directory
+      file: path={{ build_dir }} state=directory
+
+    - name: untar the tarball
+      command: tar -xzf {{ tarball }} -C {{ build_dir }} --strip-components=1
+
+    - name: expand install_dir to get the absolute path
+      command: chdir={{ install_dir }} pwd
+      register: prefix
+      changed_when: false
+
+    - name: configure
+      command: chdir={{ build_dir }} ./configure --prefix={{ prefix.stdout }}
+
+    - name: make
+      command: chdir={{ build_dir }} make
+
+    - name: make check
+      command: chdir={{ build_dir }} make check
+
+    - name: make install
+      command: chdir={{ build_dir }} make install
+      sudo: false
+
+    - name: cleanup the build directory
+      file: path={{ build_dir }} state=absent
+    
+#   - name: cleanup the tarball
+#     file: path={{ tarball }} state=absent
+

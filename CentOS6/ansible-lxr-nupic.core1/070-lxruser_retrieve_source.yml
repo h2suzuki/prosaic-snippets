@@ -1,0 +1,31 @@
+--- # Retrieve the source code to index by lxr_user
+- hosts: lxrservers
+
+  vars:
+    lxr_user: 'lxruser'
+
+    source_url: 'https://github.com/numenta/nupic.core.git'
+    source_tag: 'HEAD'
+
+    lxr_source_dir: '/home/lxruser/local/share/lxr/nupic.core'
+    lxr_version_name: '2014-09-24'
+
+  remote_user: "{{ lxr_user }}"
+  gather_facts: false
+
+  tasks:
+
+    - name: clean the source directory
+      file: path={{ lxr_source_dir ~"/"~ lxr_version_name }}
+            state=absent
+
+    - name: retrieve the source code from github
+      git: repo={{ source_url }} version={{ source_tag }}
+           dest={{ lxr_source_dir ~"/"~ lxr_version_name }} depth=1
+      when: source_url | search("github.com")
+
+    - name: trim the meta files for indexing
+      file: path={{ lxr_source_dir ~"/"~ lxr_version_name ~"/.git" }}
+            state=absent
+      when: source_url | search("github.com")
+

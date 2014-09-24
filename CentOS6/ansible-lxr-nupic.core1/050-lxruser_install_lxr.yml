@@ -1,0 +1,33 @@
+--- # Install lxr by lxr_user
+- hosts: lxrservers
+
+  vars:
+    lxr_user: 'lxruser'
+
+    download_url: "http://downloads.sourceforge.net/project/lxr/stable/lxr-2.0.2.tgz"
+    chksum: "06a1881803cf75ce15b098a4e11ccf8f70147cd772d33232af8ce7b247a74b10"
+    tarball: ~/lxr-2.0.2.tgz
+    build_dir: ~/lxr
+    install_dir: ~/local
+
+  remote_user: "{{ lxr_user }}"
+  gather_facts: false
+
+  tasks:
+
+    - name: download the tarball
+      get_url: url={{ download_url }} sha256sum={{ chksum }} dest={{ tarball }}
+
+    - name: cleanup the build directory
+      file: path={{ build_dir }} state=absent
+
+    - name: prepare the build directory
+      file: path={{ build_dir }} state=directory
+
+    - name: untar the tarball
+      command: tar -xzf {{ tarball }} -C {{ build_dir }} --strip-components=1
+
+    - name: check the environment
+      command: chdir={{ build_dir }} ./genxref --checkonly
+      changed_when: false
+
