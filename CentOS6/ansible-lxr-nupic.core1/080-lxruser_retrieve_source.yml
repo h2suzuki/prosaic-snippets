@@ -3,29 +3,37 @@
 
   vars:
     lxr_user: 'lxruser'
+    share_dir: ~/local/share
 
     source_url: 'https://github.com/numenta/nupic.core.git'
     source_tag: 'HEAD'
 
     lxr_source_dir: '/home/lxruser/local/share/lxr/nupic.core'
-    lxr_version_name: '2014-09-24'
+    lxr_tag: '2014-09-24'
+
+    lxr_config: '/home/lxruser/lxr/lxr.conf'
 
   remote_user: "{{ lxr_user }}"
-  gather_facts: false
+  gather_facts: False
 
   tasks:
 
     - name: clean the source directory
-      file: path={{ lxr_source_dir ~"/"~ lxr_version_name }}
+      file: path={{ lxr_source_dir ~"/"~ lxr_tag }}
             state=absent
 
     - name: retrieve the source code from github
       git: repo={{ source_url }} version={{ source_tag }}
-           dest={{ lxr_source_dir ~"/"~ lxr_version_name }} depth=1
+           dest={{ lxr_source_dir ~"/"~ lxr_tag }} depth=1
       when: source_url | search("github.com")
 
     - name: trim the meta files for indexing
-      file: path={{ lxr_source_dir ~"/"~ lxr_version_name ~"/.git" }}
+      file: path={{ lxr_source_dir ~"/"~ lxr_tag ~"/.git" }}
             state=absent
       when: source_url | search("github.com")
 
+    - name: add lxr_tag to lxr_config
+      script: ./lxrconf_mod_version.sh {{ lxr_config }} add {{ lxr_tag }}
+      register: mod_result
+      changed_when: mod_result.stdout | search("true")
+      tags: lxrconf

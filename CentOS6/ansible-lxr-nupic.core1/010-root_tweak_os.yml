@@ -9,7 +9,7 @@
 
   remote_user: root
 
-  gather_facts: false
+  gather_facts: False
 
   tasks:
 
@@ -25,7 +25,7 @@
       register: selinux_state
       changed_when: no
 
-    - name: bailout for a reboot
+    - name: bailing out for a reboot
       fail: msg="Reboot the system and rerun the playbook after that."
       when: selinux_state.stdout != "Disabled"
 

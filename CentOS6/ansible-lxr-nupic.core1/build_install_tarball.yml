@@ -1,0 +1,38 @@
+--- # Build out of a tarball
+
+# required vars and examples:
+#    tarball: ~/glimpse-latest.tar.gz
+#    build_dir: ~/glimpse
+#    install_dir: ~/local
+#    sudo_install: False
+
+- name: expand install_dir to obtain the absolute path
+  command: chdir={{ install_dir }} pwd
+  register: prefix
+  changed_when: False
+
+- name: cleanup the build directory
+  file: path={{ build_dir }} state=absent
+
+- name: prepare the build directory
+  file: path={{ build_dir }} state=directory
+
+- name: untar the tarball
+  command: tar -xzf {{ tarball }} -C {{ build_dir }} --strip-components=1
+
+- name: configure
+  command: chdir={{ build_dir }} ./configure --prefix={{ prefix.stdout }}
+
+- name: make
+  command: chdir={{ build_dir }} make
+
+- name: make check
+  command: chdir={{ build_dir }} make check
+
+- name: make install
+  command: chdir={{ build_dir }} make install
+  sudo: sudo_install
+
+- name: cleanup the build directory
+  file: path={{ build_dir }} state=absent
+

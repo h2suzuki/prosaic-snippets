@@ -5,7 +5,7 @@
 
   remote_user: root
 
-  gather_facts: false
+  gather_facts: False
 
   tasks:
     # This can also be written using "with_items:" but this way
@@ -49,6 +49,4 @@
 
     - name: (13/13) install File-MMagic for lxr
       yum: state=latest name=perl-File-MMagic  # from EPEL
-
-  handlers:
 

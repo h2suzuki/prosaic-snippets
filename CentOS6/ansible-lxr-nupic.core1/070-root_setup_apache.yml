@@ -12,7 +12,7 @@
     httpd_server_name: '192.168.170.64'
 
   remote_user: root
-  gather_facts: false
+  gather_facts: False
 
   tasks:
 
@@ -31,10 +31,10 @@
       notify: reload httpd
 
     - name: make lxr_user home to be world searchable
-      file: path=~{{ lxr_user }} mode=0711
+      file: path=~{{ lxr_user }} state=directory mode=0711
 
     - name: make glimpse db directory to be world searchable
-      file: path={{ lxr_glimpse_db_dir }} state=directory recurse=yes mode=0755
+      file: path={{ lxr_glimpse_db_dir }} state=directory mode=0755
 
   handlers:
 

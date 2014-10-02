@@ -1,27 +1,34 @@
---- # Setup the environment by lxruser
+--- # Setup the login environment of lxruser
 - hosts: lxrservers
 
   vars:
     lxr_user: 'lxruser'
 
-  remote_user: "{{ lxr_user }}"
+    install_dir: ~/local
+    share_dir: ~/local/share
 
-  gather_facts: false
+  remote_user: "{{ lxr_user }}"
+  gather_facts: False
 
   tasks:
 
-    - name: create ~/local/bin for glimpse
-      file: path=~/local/bin state=directory mode=0755
+    - name: create the install directory for glimpse
+      file: path={{ install_dir }} state=directory mode=0755
 
-    - name: create ~/local/share/glimpse for the glimpse index
-      file: path=~/local/share/glimpse state=directory mode=0755
+    - name: create the directory for the glimpse index
+      file: path={{ share_dir }}/glimpse state=directory mode=0755
 
-    - name: create ~/local/share/lxr for Lxr DB and the tree store
-      file: path=~/local/share/lxr state=directory mode=0755
+    - name: create the directory for Lxr DB and the source trees 
+      file: path={{ share_dir }}/lxr state=directory mode=0755
 
-    - name: setup $PATH for login usage
+    - name: expand install directory to obtain the absolute path
+      command: chdir={{ install_dir }} pwd
+      register: install_dir_full
+      changed_when: False
+
+    - name: setup $PATH for bash login usage
       lineinfile:
         "dest=~/.bash_profile
-        regexp='^PATH=' line='PATH=$PATH:$HOME/local/bin # Added by ansible'
+        regexp='^PATH=' line='PATH=$PATH:{{ install_dir_full.stdout }}/bin'
         state=present"
 
