@@ -1,0 +1,6 @@
+---
+- name: included
+  debug: var=testvar1
+
+- name: included
+  debug: var=testvar2

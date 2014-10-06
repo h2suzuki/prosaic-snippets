@@ -1,0 +1,5 @@
+---
+- command: whoami
+  register: result
+
+- debug: var=result

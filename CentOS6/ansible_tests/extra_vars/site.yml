@@ -1,0 +1,38 @@
+--- # file: site.yml
+- hosts: test-servers
+
+  #remote_user: root
+ 
+  vars:
+    testvar1: abc
+    testvar2:
+      name1: def
+      name2: ghi
+    #testvar2: "name1:def name2:ghi"
+
+  gather_facts: False
+
+  tasks:
+    - name: main playbook
+      debug: var=testvar1
+
+    - name: main playbook
+      debug: var=testvar2
+
+    - name: main playbook
+      debug: var=testvar2.name1
+
+    - name: main playbook
+      debug: var=testvar2.name2
+
+    - name: create new vars
+      set_fact:
+        newvar1: '{{ testvar1 ~" - "~ testvar1 }}'
+        newvar2: '{{ testvar2.name1 ~" - "~ testvar2.name2 }}'
+
+    - debug: var=newvar1
+
+    - debug: var=newvar2
+
+    - include: included.yml
+
