@@ -1,0 +1,52 @@
+--- # file: lineinfile.yml
+
+- hosts: all
+
+  gather_facts: False
+
+  vars:
+    original_file: ./test.txt.org
+    target_file: ./test.txt
+    fresh_start: yes
+
+  tasks:
+    - name: copy the data file 
+      copy: src={{ original_file }} dest={{ target_file }}
+        force={{ fresh_start }}
+
+    - name: case1 insert the line '...'
+      lineinfile: dest={{ target_file }} state=present
+        insertafter='\t.*single-quoted-nomix'
+        line='\ta line with tab 1'
+        regexp='a line with tab 1'
+
+    - name: case2 insert the line "..."
+      lineinfile: dest={{ target_file }} state=present
+        insertafter="\t.*double-quoted-nomix"
+        line="\ta line with tab 2"
+        regexp="a line with tab 2"
+
+    - name: case3 insert the line with '"..."'
+      lineinfile: dest={{ target_file }} state=present
+        insertafter='\t.*single-quoted-mix'
+        line='\ta line with "tab" 3'
+        regexp='a line with "tab" 3'
+
+    - name: case4 insert the line "'...'"
+      lineinfile: dest={{ target_file }} state=present
+        insertafter="\t.*double-quoted-mix"
+        line="\ta line with 'tab' 4"
+        regexp="a line with 'tab' 4"
+
+    - name: case5 insert the line with '"..."' with jinja2
+      lineinfile: dest={{ target_file }} state=present
+        insertafter='\t.*single-quoted-jinja2-mix'
+        line='{{ "\t" }}a line with "tab" 5'
+        regexp='a line with "tab" 5'
+
+    - name: case6 insert the line "'...'" with jinja2
+      lineinfile: dest={{ target_file }} state=present
+        insertafter="\t.*double-quoted-jinja2-mix"
+        line="{{ '\t' }}a line with 'tab' 6"
+        regexp="a line with 'tab' 6"
+

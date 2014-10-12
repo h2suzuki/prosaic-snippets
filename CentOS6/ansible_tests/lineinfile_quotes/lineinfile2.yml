@@ -1,0 +1,21 @@
+--- # file: lineinfile.yml
+
+- hosts: all
+
+  gather_facts: False
+
+  vars:
+    original_file: ./test2.txt.org
+    target_file: ./test.txt
+    fresh_start: yes
+
+  tasks:
+    - name: copy the data file 
+      copy: src={{ original_file }} dest={{ target_file }}
+        force={{ fresh_start }}
+
+    - name: case4 insert the line "'...'"
+      lineinfile: dest={{ target_file }} state=present
+        insertafter="\t.*this line"
+        line="\ta line with 'tab'"
+        regexp="a line with 'tab'"

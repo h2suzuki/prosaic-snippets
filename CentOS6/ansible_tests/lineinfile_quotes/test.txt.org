@@ -1,0 +1,20 @@
+# a sample text
+
+	Insert after this line: single-quoted-nomix '...'
+	the next line
+
+	Insert after this line: double-quoted-nomix "..."
+	the next line
+
+	Insert after this line: single-quoted-mix '"..."'
+	the next line
+
+	Insert after this line: double-quoted-mix "'...'"
+	the next line
+
+	Insert after this line: single-quoted-jinja2-mix '{{xx}} "..."'
+	the next line
+
+	Insert after this line: double-quoted-jinja2-mix "{{xx}} '...'"
+	the next line
+

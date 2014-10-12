@@ -1,0 +1,12 @@
+--- # file:site.yml
+
+- hosts: test-servers
+
+  remote_user: root
+
+  gather_facts: False
+
+  roles:
+    - { role: test1, tags: test1 }
+    - { role: test2, tags: test2 }
+    - { role: test3, tags: test3 }
