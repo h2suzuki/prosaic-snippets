@@ -1,2 +1,9 @@
-[test-servers]
-localhost
+[test-servers1]
+localhost1  ansible_connection=local
+
+[test-servers2]
+localhost2  ansible_connection=local
+
+[test-servers:children]
+test-servers1
+test-servers2
