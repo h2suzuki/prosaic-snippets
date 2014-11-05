@@ -1,0 +1,13 @@
+--- # file: site.yml
+- hosts: test-servers
+
+  gather_facts: "{{ check_env | default(False) }}"
+
+  tasks:
+    - name: Set the hostname using the inventory
+      hostname: name={{ inventory_hostname }}
+      sudo: yes
+
+    - name: The current hostname
+      debug: var=ansible_hostname
+
